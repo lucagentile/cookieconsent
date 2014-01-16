@@ -13,7 +13,9 @@
 
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>
-*/
+ */
+
+"use strict";
 
 var cc =
 {
@@ -190,20 +192,20 @@ var cc =
 
     setup: function () {
         jQuery.each(cc.bindfunctions, function (key, value) {
-            for (i = 0; i < value.length; i++) {
+            for (var i = 0; i < value.length; i++) {
                 jQuery(document).bind("cc_" + key, value[i]);
             }
         });
-        verstr = jQuery().jquery;
-        parts = verstr.split('.');
-        versionRequired = cc.jqueryversionrequired.split('.');
-        jqueryOk = true;
-        for (i = 0; i < parts.length && i < versionRequired.length; i++) {
-            currentpart = parseInt(parts[i]);
-            requiredpart = parseInt(versionRequired[i]);
+        var verstr = jQuery().jquery,
+            parts = verstr.split('.'),
+            versionRequired = cc.jqueryversionrequired.split('.'),
+            jqueryOk = true;
+        for (var i = 0; i < parts.length && i < versionRequired.length; i++) {
+            var currentpart = parseInt(parts[i]),
+                requiredpart = parseInt(versionRequired[i]);
             if (currentpart < requiredpart) {
                 /* Unsatisfied - this part of the version string is less than the version we require */
-                jqueryok = false;
+                var jqueryok = false;
                 break;
             }
             if (currentpart > requiredpart) {
@@ -279,7 +281,7 @@ var cc =
         if (cc.settings.onlyshowwithineu && !cc.settings.ipinfodbkey) {
             alert(cc.strings.noKeyWarning);
         }
-        testmode = cc.geturlparameter('cctestmode');
+        var testmode = cc.geturlparameter('cctestmode');
         if (testmode == 'accept' || testmode == 'decline') {
             cc.settings.testmode = testmode;
         }
@@ -323,8 +325,8 @@ var cc =
     },
 
     calculatestatsparams: function () {
-        params = "c=";
-        first = true;
+        var params = "c=",
+            first = true;
         jQuery.each(cc.initobj.cookies, function (key, value) {
             if (first) {
                 first = false;
@@ -358,7 +360,7 @@ var cc =
 
     fetchprefs: function () {
         cc.remoteresponse = false;
-        params = "?s=1";
+        var params = "?s=1";
         if (cc.settings.collectStatistics) {
             params = "?s=1&" + cc.calculatestatsparams();
         }
@@ -398,7 +400,7 @@ var cc =
     checklocal: function () {
         this.checkedlocal = true;
         jQuery.each(cc.cookies, function (key, value) {
-            cookieval = cc.getcookie('cc_' + key);
+            var cookieval = cc.getcookie('cc_' + key);
             if (cookieval) {
                 cc.approved[key] = cookieval;
             }
@@ -432,7 +434,7 @@ var cc =
     },
 
     deletecookie: function (key) {
-        date = new Date();
+        var date = new Date();
         date.setDate(date.getDate() - 1);
         document.cookie = escape("cc_" + key) + '=; path=/; expires=' + date;
     },
@@ -474,7 +476,7 @@ var cc =
             jQuery('head').append('<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0;">');
             jQuery('body').html('').css("margin", 0);
         }
-        data = '<div id="cc-notification">' +
+        var data = '<div id="cc-notification">' +
             '<div id="cc-notification-wrapper">' +
             '<h2><span>' + cc.strings.notificationTitle + '</span></h2>' +
             '<div id="cc-notification-permissions">' +
@@ -508,13 +510,13 @@ var cc =
             jQuery('#cc-notification-moreinformation').prepend('<a href="' + cc.settings.privacyPolicy + '">' + cc.strings.privacyPolicy + '</a> | ');
         }
         jQuery('#cc-notification').addClass(cc.settings.style).addClass(cc.settings.bannerPosition);
-        bannerh = jQuery('#cc-notification').height();
+        var bannerh = jQuery('#cc-notification').height(),
+            allcustom = true;
         jQuery('#cc-notification').hide();
         if (cc.ismobile) {
             jQuery('#cc-notification').addClass("cc-mobile");
         }
         jQuery('#cc-notification-permissions').prepend('<ul></ul>');
-        allcustom = true;
         jQuery.each(cc.cookies, function (key, value) {
             if (!value.asked) {
                 jQuery('#cc-notification-permissions ul').append('<li><input type="checkbox" checked="checked" id="cc-checkbox-' + key + '" /> <label id="cc-label-' + key + '" for="cc-checkbox-' + key + '"><strong>' + value.title + '</strong> ' + value.description + '</label></li>');
@@ -699,9 +701,7 @@ var cc =
             cc.showbanner();
         } else {
             if (cc.settings.collectStatistics) {
-                params = "";
-                params += "?s=1&n=1&" + cc.calculatestatsparams();
-                cc.insertscript(cc.settings.serveraddr + params);
+                cc.insertscript(cc.settings.serveraddr + "?s=1&n=1&" + cc.calculatestatsparams());
             }
             cc.showminiconsent();
         }
@@ -730,8 +730,8 @@ var cc =
     },
 
     executescriptinclusion: function (cookieType) {
-        timetaken = jQuery('script.cc-onconsent-inline-' + cookieType + '[type="text/plain"]').size() * cc.settings.scriptdelay;
-        now = new Date().getTime();
+        var timetaken = jQuery('script.cc-onconsent-inline-' + cookieType + '[type="text/plain"]').size() * cc.settings.scriptdelay,
+            now = new Date().getTime();
 
         if (now < cc.executionblock) {
             setTimeout(cc.executescriptinclusion, cc.executionblock - now, [cookieType]);
@@ -772,7 +772,7 @@ var cc =
 
     getcookie: function (c_name) {
         var i, x, y, ARRcookies = document.cookie.split(";");
-        for (i = 0; i < ARRcookies.length; i++) {
+        for (var i = 0; i < ARRcookies.length; i++) {
             x = ARRcookies[i].substr(0, ARRcookies[i].indexOf("="));
             y = ARRcookies[i].substr(ARRcookies[i].indexOf("=") + 1);
             x = x.replace(/^\s+|\s+$/g, "");
@@ -1294,22 +1294,3 @@ if (!(window.jQuery)) {
 (function (a) {
     cc.ismobile = /android.+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(a) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|e\-|e\/|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(di|rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|xda(\-|2|g)|yas\-|your|zeto|zte\-/i.test(a.substr(0, 4))
 })(navigator.userAgent || navigator.vendor || window.opera);
-
-
-/**
- * Load web font
- *
- **/
-
-WebFontConfig = {
-    google: { families: [ 'Open+Sans:400,600:latin' ] }
-};
-(function () {
-    var wf = document.createElement('script');
-    wf.src = ('https:' == document.location.protocol ? 'https' : 'http') +
-        '://ajax.googleapis.com/ajax/libs/webfont/1/webfont.js';
-    wf.type = 'text/javascript';
-    wf.async = 'true';
-    var s = document.getElementsByTagName('script')[0];
-    s.parentNode.insertBefore(wf, s);
-})();
