@@ -96,7 +96,8 @@ var cc =
         overridewarnings: false,
         onlyshowwithineu: false,
         ipinfodbkey: false,
-        ignoreDoNotTrack: false
+        ignoreDoNotTrack: false,
+        cached_elements: {}
     },
 
     strings: {
@@ -150,10 +151,10 @@ var cc =
 
     onconsent: function (cookieType, input) {
         if (cc.isfunction(input)) {
-            fn = input;
+            var fn = input;
         }
         else {
-            scriptname = input;
+            var scriptname = input;
             fn = function () {
                 cc.insertscript(scriptname);
             };
@@ -299,17 +300,26 @@ var cc =
             }
         }
 
+        // Cached DOM Elements
+        cc.cached_elements = {
+            $body: jQuery('body'),
+            $head: jQuery('head'),
+            $modal_content: jQuery('#cc-modal-wrapper .cc-content'),
+            $settings_modal: jQuery('#cc-settingsmodal'),
+            $settings_modal_content: jQuery('#cc-settingsmodal-wrapper .cc-content')
+        };
     },
 
     initialise: function (obj) {
         cc.initobj = obj;
+        var attrname;
         if (obj.settings !== undefined) {
-            for (var attrname in obj.settings) {
+            for (attrname in obj.settings) {
                 this.settings[attrname] = obj.settings[attrname];
             }
         }
         if (obj.strings !== undefined) {
-            for (var attrname in obj.strings) {
+            for (attrname in obj.strings) {
                 this.strings[attrname] = obj.strings[attrname];
             }
         }
@@ -459,7 +469,7 @@ var cc =
                 if (jQuery('#cc-modal').is(":visible")) {
                     jQuery('#cc-modal .cc-modal-closebutton a').click();
                 }
-                if (jQuery('#cc-settingsmodal').is(":visible")) {
+                if (cc.cached_elements.$settings_modal.is(":visible")) {
                     jQuery('#cc-settingsmodal #cc-settingsmodal-closebutton a').click();
                 }
             }
@@ -473,8 +483,8 @@ var cc =
         jQuery('#cc-notification').remove();
         if (cc.ismobile) {
             cc.setupformobile();
-            jQuery('head').append('<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0;">');
-            jQuery('body').html('').css("margin", 0);
+            cc.cached_elements.$head.append('<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0;">');
+            cc.cached_elements.$body.html('').css("margin", 0);
         }
         var data = '<div id="cc-notification">' +
             '<div id="cc-notification-wrapper">' +
@@ -495,7 +505,7 @@ var cc =
             '</div>' +
             '</div>';
 
-        jQuery('body').prepend(data);
+        cc.cached_elements.$body.prepend(data);
         if (cc.settings.hideallsitesbutton) {
             jQuery('#cc-approve-button-allsites').hide();
         }
@@ -611,7 +621,7 @@ var cc =
 
     locationcallback: function (data) {
         if (data.statusCode == "OK" && data.countryCode) {
-            ineu = "yes";
+            var ineu = "yes";
             if (jQuery.inArray(data.countryCode, cc.eumemberstates) == -1) {
                 //Visitor is from outside EU
                 ineu = "no";
@@ -641,7 +651,7 @@ var cc =
     checkapproval: function () {
         if (!cc.checkedipdb && cc.settings.onlyshowwithineu) {
             cc.checkedipdb = true;
-            ineu = cc.getcookie('cc_ineu');
+            var ineu = cc.getcookie('cc_ineu');
             if (ineu) {
                 if (ineu == "no") {
                     jQuery.each(cc.cookies, function (key, value) {
@@ -772,7 +782,7 @@ var cc =
 
     getcookie: function (c_name) {
         var i, x, y, ARRcookies = document.cookie.split(";");
-        for (var i = 0; i < ARRcookies.length; i++) {
+        for (i = 0; i < ARRcookies.length; i++) {
             x = ARRcookies[i].substr(0, ARRcookies[i].indexOf("="));
             y = ARRcookies[i].substr(ARRcookies[i].indexOf("=") + 1);
             x = x.replace(/^\s+|\s+$/g, "");
@@ -815,10 +825,9 @@ var cc =
                     cc.cookies[key].asked = true;
                 }
                 cc.setcookie('cc_' + key, cc.approved[key], 365);
-            } else {
             }
         });
-        urlx = cc.settings.serveraddr + '?p=1&tokenonly=true&cc-key=' + cc.sessionkey;
+        var urlx = cc.settings.serveraddr + '?p=1&tokenonly=true&cc-key=' + cc.sessionkey;
         if (cc.remoteCookies['social']) {
             urlx += '&cc-cookies-social=' + cc.approved['social'];
         }
@@ -834,7 +843,7 @@ var cc =
         if (!cc.ismobile) {
             jQuery('#cc-notification').slideUp();
             if (cc.settings.bannerPosition == "cc-push") {
-                //detect body margin
+                // Detect body margin
                 jQuery('html').animate({marginTop: 0}, 400);
             }
         }
@@ -844,15 +853,15 @@ var cc =
     },
 
     onlocalconsentgiven: function () {
-        enableall = false;
-        enablejustone = false;
+        var enableall = false,
+            enablejustone = false,
+            elem = this;
         if (jQuery(this).hasClass('cc-button-enableall') || jQuery(this).hasClass('cc-button-enable-all')) {
             enableall = true;
             jQuery.each(cc.cookies, function (key, value) {
                 cc.cookies[key].asked = false;
             });
         }
-        elem = this;
         jQuery.each(cc.cookies, function (key, value) {
             if (jQuery(elem).hasClass('cc-button-enable-' + key)) {
                 enablejustone = true;
@@ -901,8 +910,8 @@ var cc =
 
     showminiconsent: function () {
         if (jQuery('#cc-tag').length == 0) {
-            data = '<div id="cc-tag" class="cc-tag-' + cc.settings.tagPosition + '"><a class="cc-link" href="#" id="cc-tag-button" title="' + cc.strings.privacySettings + '"><span>' + cc.strings.privacySettings + '</span></a></div>';
-            jQuery('body').prepend(data);
+            var data = '<div id="cc-tag" class="cc-tag-' + cc.settings.tagPosition + '"><a class="cc-link" href="#" id="cc-tag-button" title="' + cc.strings.privacySettings + '"><span>' + cc.strings.privacySettings + '</span></a></div>';
+            cc.cached_elements.$body.prepend(data);
             jQuery('#cc-tag').addClass(cc.settings.style);
             if (!cc.settings.hideprivacysettingstab) {
                 jQuery('#cc-tag').fadeIn();
@@ -938,12 +947,12 @@ var cc =
             cc.fetchprefs();
         }
         jQuery(document).bind('keyup', cc.onkeyup);
-        jQuery('body').prepend('<div id="cc-modal-overlay"></div>');
+        cc.cached_elements.$body.prepend('<div id="cc-modal-overlay"></div>');
         jQuery(this).blur();
         if (cc.ismobile) {
             cc.setupformobile();
         }
-        data = '<div id="cc-modal">' +
+        var data = '<div id="cc-modal">' +
             '<div id="cc-modal-wrapper">' +
             '<h2>' + cc.strings.privacySettingsDialogTitleA + ' <span>' + cc.strings.privacySettingsDialogTitleB + '</span></h2>' +
             '<p class="cc-subtitle">' + cc.strings.privacySettingsDialogSubtitle + '</p>' +
@@ -961,7 +970,7 @@ var cc =
             '<div class="cc-clear"></div>' +
             '</div>' +
             '</div>';
-        jQuery('body').prepend(data);
+        cc.cached_elements.$body.prepend(data);
         if (cc.settings.disableallsites) {
             jQuery('#cc-modal-global').hide();
         }
@@ -1001,7 +1010,7 @@ var cc =
             cc.remoteCookies[key] = value;
 
         });
-        urlx = cc.settings.serveraddr + '?p=1&tokenonly=true&cc-key=' + cc.sessionkey;
+        var urlx = cc.settings.serveraddr + '?p=1&tokenonly=true&cc-key=' + cc.sessionkey;
         if (cc.remoteCookies['social']) {
             urlx += '&cc-cookies-social=' + cc.remoteCookies['social'];
         }
@@ -1016,8 +1025,8 @@ var cc =
 
         jQuery('#cc-notification').hide().remove();
         jQuery(this).blur();
-        jQuery('#cc-settingsmodal').fadeOut(null, function () {
-            jQuery('#cc-settingsmodal').remove();
+        cc.cached_elements.$settings_modal.fadeOut(null, function () {
+            cc.cached_elements.$settings_modal.remove();
         });
         if (!cc.frommodal) {
             cc.checkapproval();
@@ -1039,7 +1048,7 @@ var cc =
                 cc.closingmodal = false;
             });
             jQuery.each(cc.cookies, function (key, value) {
-                thisval = jQuery('#cc-preference-selector-' + key).val();
+                var thisval = jQuery('#cc-preference-selector-' + key).val();
 
                 if (key == "necessary") {
                     thisval = "yes";
@@ -1062,7 +1071,7 @@ var cc =
 
             });
             cc.checkapproval();
-        } else if (!jQuery('#cc-settingsmodal').is(":visible") && !jQuery('#cc-modal').is(":visible")) {
+        } else if (!cc.cached_elements.$settings_modal.is(":visible") && !jQuery('#cc-modal').is(":visible")) {
             cc.closingmodal = true;
             jQuery('#cc-modal-overlay').fadeToggle(null, function () {
                 cc.closingmodal = false;
@@ -1078,9 +1087,9 @@ var cc =
 
 
     reloadmodal: function () {
-        jQuery('#cc-modal-wrapper .cc-content').html('');
+        cc.cached_elements.$modal_content.html('');
         if (cc.getsize(cc.cookies) > 0) {
-            jQuery('#cc-modal-wrapper .cc-content').append('<ul></ul>');
+            cc.cached_elements.$modal_content.append('<ul></ul>');
             jQuery.each(cc.cookies, function (key, value) {
 
                 jQuery('#cc-modal-wrapper ul').append('<li id="cc-preference-element-' + key + '"><label for="cc-preference-selector-' + key + '"><strong>' + value.title + '</strong><span>' + value.description + '</span></label><select id="cc-preference-selector-' + key + '"><option value="yes">' + cc.strings.preferenceConsent + '</option><option value="no">' + cc.strings.preferenceDecline + '</option></select></li>');
@@ -1113,43 +1122,38 @@ var cc =
 
             });
         } else {
-            jQuery('#cc-modal-wrapper .cc-content').append('<p>' + cc.strings.notUsingCookies + '</p>');
+            cc.cached_elements.$modal_content.append('<p>' + cc.strings.notUsingCookies + '</p>');
         }
         jQuery('.cc-content').append('<div class="cc-clear"></div>');
     },
 
     reloadsettingsmodal: function () {
-        jQuery('#cc-settingsmodal-wrapper .cc-content').html('');
+        cc.cached_elements.$settings_modal_content.html('');
         if (cc.getsize(cc.defaultCookies) > 0) {
-            jQuery('#cc-settingsmodal-wrapper .cc-content').append('<ul></ul>');
+            cc.cached_elements.$settings_modal_content.append('<ul></ul>');
             jQuery.each(cc.defaultCookies, function (key, value) {
+                var $preference_selector = jQuery('#cc-globalpreference-selector-' + key);
 
                 jQuery('#cc-settingsmodal-wrapper ul').append('<li id="cc-globalpreference-element-' + key + '"><label for="cc-globalpreference-selector-' + key + '"><strong>' + value.title + '</strong><span>' + value.description + '</span></label><select id="cc-globalpreference-selector-' + key + '"><option value="ask">' + cc.strings.preferenceAsk + '</option><option value="always">' + cc.strings.preferenceAlways + '</option><option value="never">' + cc.strings.preferenceNever + '</option></select></li>');
                 if (value.link) {
                     jQuery('#cc-globalpreference-element-' + key + ' label span').append(' <a target="_blank" href="' + value.link + '" class="cc-learnmore-link">' + cc.strings.learnMore + '</a>');
                 }
-                jQuery('#cc-globalpreference-selector-' + key).change(function () {
-
-                });
                 if (cc.remoteCookies[key] == "always") {
-                    jQuery('#cc-globalpreference-selector-' + key).val("always")
+                    $preference_selector.val("always")
+                } else if (cc.remoteCookies[key] == "never") {
+                    $preference_selector.val("never")
+                } else {
+                    $preference_selector.val("ask")
                 }
-                else if (cc.remoteCookies[key] == "never") {
-                    jQuery('#cc-globalpreference-selector-' + key).val("never")
-                }
-                else {
-                    jQuery('#cc-globalpreference-selector-' + key).val("ask")
-                }
-
             });
         } else {
-            jQuery('#cc-settingsmodal-wrapper .cc-content').append('<p>' + cc.strings.notUsingCookies + '</p>');
+            cc.cached_elements.$settings_modal_content.append('<p>' + cc.strings.notUsingCookies + '</p>');
         }
-        jQuery('#cc-settingsmodal-wrapper .cc-content').append('<div class="cc-clear"></div>');
+        cc.cached_elements.$settings_modal_content.append('<div class="cc-clear"></div>');
     },
 
     approvedeny: function () {
-        key = jQuery(this).attr("id").split("-")[2];
+        var key = jQuery(this).attr("id").split("-")[2];
         if (cc.cookies[key].approved) {
             cc.cookies[key].approved = false;
             cc.approved[key] = "no";
@@ -1192,13 +1196,14 @@ var cc =
             cc.setupformobile();
             jQuery('#cc-notification').remove();
         }
+        var buttontext;
         if (cc.frommodal) {
             buttontext = cc.strings.backToSiteSettings;
         } else {
             buttontext = cc.strings.closeWindow;
         }
 
-        data = '<div id="cc-settingsmodal">' +
+        var data = '<div id="cc-settingsmodal">' +
             '<div id="cc-settingsmodal-wrapper">' +
             '<h2>' + cc.strings.allSitesSettingsDialogTitleA + ' <span>' + cc.strings.allSitesSettingsDialogTitleB + '</span></h2>' +
             '<p class="cc-subtitle">' + cc.strings.allSitesSettingsDialogSubtitle + '</p>' +
@@ -1212,16 +1217,16 @@ var cc =
             '<a id="cc-notification-logo" class="cc-logo" target="_blank" href="http://silktide.com/cookieconsent" title="' + cc.strings.poweredBy + '"><span>' + cc.strings.poweredBy + '</span></a> ' +
             '</div>' +
             '</div>';
-        jQuery('body').prepend(data);
+        cc.cached_elements.$body.prepend(data);
         cc.reloadsettingsmodal();
-        jQuery('#cc-settingsmodal').addClass(cc.settings.style).click(cc.closemodals);
+        cc.cached_elements.$settings_modal.addClass(cc.settings.style).click(cc.closemodals);
         jQuery('#cc-settingsmodal-wrapper').click(function () {
             cc.noclosewin = true;
         });
         if (cc.ismobile) {
-            jQuery('#cc-settingsmodal').addClass("cc-mobile");
+            cc.cached_elements.$settings_modal.addClass("cc-mobile");
         }
-        jQuery('#cc-settingsmodal').fadeIn();
+        cc.cached_elements.$settings_modal.fadeIn();
         jQuery('.cc-settingsmodal-closebutton').click(cc.closepreferencesmodal);
 
         return false;
@@ -1230,13 +1235,12 @@ var cc =
     setupformobile: function () {
         if (!cc.hassetupmobile) {
             cc.hassetupmobile = true;
-            jQuery('head').append('<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0;">');
+            cc.cached_elements.$head.append('<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0;">');
+            var bgcol = '#1d1d1d';
             if (cc.settings.style == 'cc-light') {
                 bgcol = '#e1e1e1';
-            } else {
-                bgcol = '#1d1d1d'
             }
-            jQuery('body').html('').css("margin", 0).css('width', 'auto').css("backgroundColor", bgcol).css("backgroundImage", 'none');
+            cc.cached_elements.$body.html('').css("margin", 0).css('width', 'auto').css("backgroundColor", bgcol).css("backgroundImage", 'none');
         }
     },
 
